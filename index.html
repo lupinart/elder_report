@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投影互動介面輔助照護員活動帶領設計研究 | 提案展示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chosen Palette: Warm Neutrals (Stone/Warm Gray) for the app frame, with Specific High-Contrast (Deep Blue #003366 / Lime #CCFF00) for the prototype demo area as per report specs. -->
+    
+    <!-- Application Structure Plan: 
+         1. Hero Section: Title and core mission statement ("From Monitoring to Interaction").
+         2. Context & Problem (Market): Interactive Charts showing the "Fragmented Market" and "Manpower Gap" to establish the 'Why'.
+         3. Strategy (Solution): Interactive Cards comparing Old Tech vs. New Projection approach, emphasizing the B2B Trust Channel.
+         4. The Design Core (Prototype): A functional interactive simulation of the 3-Layer UI. 
+            - Visual Toggle: Switch between "Bad UI" and "LILab Standard".
+            - Safety Sim: A button to trigger the "Fall Detection" AI alert logic (5s warning).
+         5. AI & Value: A dashboard view showing the "Adaptive Grouping" concept and a Value Pyramid.
+         6. Conclusion: The emotional closing statement.
+         
+         Why: This flows from "Understanding the Pain" -> "The Smart Solution" -> "Proof of Concept (Interactive)" -> "Business Value", mirroring the persuasive logic of a pitch deck.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Market Data: Chart.js Pie & Bar charts. Goal: Visualize the "Fragmented Market" and "Resource Gap". Interaction: Tooltips.
+         2. Tech Comparison: Interactive Cards (Click to flip/expand). Goal: Contrast Wearables vs. Projection.
+         3. UI Simulator: Custom JS/CSS DOM manipulation. Goal: Demonstrate the "Visual Standard" (Contrast) and "Safety Standard" (Alerts) directly in the browser. Interaction: Buttons to toggle states.
+         4. AI Dashboard: Styled HTML Table/Grid. Goal: Show the "Adaptive Grouping" logic.
+         5. Value Pyramid: Styled CSS Triangle/Stack. Goal: Show the hierarchy of value.
+         
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. All icons are FontAwesome or Unicode. Charts are Canvas.
+    -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+            color: #44403c; /* stone-700 */
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Constraint */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        /* High Contrast Demo Mode Classes */
+        .hcd-normal {
+            background-color: #ffffff;
+            color: #9ca3af; /* gray-400 - simulating bad contrast */
+            font-size: 16px;
+        }
+        
+        .hcd-lilab {
+            background-color: #003366; /* Deep Blue */
+            color: #CCFF00; /* Lime Green */
+            font-weight: 700;
+        }
+
+        .alert-pulse {
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .hit-area {
+            transition: all 0.3s ease;
+        }
+        .hit-area:hover {
+            transform: scale(1.1);
+            background-color: rgba(204, 255, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-stone-300">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-100/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-stone-800 tracking-tight">LILab <span class="text-stone-500 font-normal">| 投影互動介面</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('market')" class="text-stone-600 hover:text-stone-900 transition font-medium">市場洞察</button>
+                    <button onclick="scrollToSection('strategy')" class="text-stone-600 hover:text-stone-900 transition font-medium">核心策略</button>
+                    <button onclick="scrollToSection('prototype')" class="text-stone-600 hover:text-stone-900 transition font-medium">介面展示</button>
+                    <button onclick="scrollToSection('ai-value')" class="text-stone-600 hover:text-stone-900 transition font-medium">AI 價值</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-white border-b border-stone-200">
+        <div class="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-stone-900 mb-6 leading-tight">
+                讓科技承擔安全的重量<br>
+                <span class="text-stone-500">讓雙手回歸擁抱的溫度</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-xl text-stone-600 mb-8">
+                投影互動介面輔助照護員的活動帶領設計研究<br>
+                <span class="text-sm mt-2 block">Lupin Interaction Lab (LILab) | 提案人：余莉苹</span>
+            </p>
+            <div class="flex justify-center gap-4">
+                <button onclick="scrollToSection('prototype')" class="bg-stone-800 text-white px-8 py-3 rounded-full hover:bg-stone-700 transition shadow-lg">
+                    體驗互動介面
+                </button>
+                <button onclick="scrollToSection('market')" class="bg-white text-stone-800 border border-stone-300 px-8 py-3 rounded-full hover:bg-stone-50 transition">
+                    了解市場痛點
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section 1: Market Insights (Why) -->
+    <section id="market" class="py-16 bg-stone-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-4">被誤解的市場：從「大餅」到「碎玻璃」</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    很多人以為銀髮市場很大，但其實是無數個碎片需求的總和。我們不貪心，只鎖定「日間照護中心」這個最剛性的微市場，解決「人力」與「安全」的致命矛盾。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                <!-- Chart 1: The Fragmented Market -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">長者需求的破碎化 (碎玻璃理論)</h3>
+                    <p class="text-sm text-stone-500 mb-4">不同階段的長者需求截然不同，無法用單一產品滿足。</p>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: The Manpower Gap -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">桃園日照：高覆蓋率 vs 低人力比</h3>
+                    <p class="text-sm text-stone-500 mb-4">硬體建設雖達標，但軟體人力嚴重緊繃，導致照護員壓力巨大。</p>
+                    <div class="chart-container">
+                        <canvas id="manpowerChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Strategy (How) -->
+    <section id="strategy" class="py-16 bg-white border-y border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-4">核心策略：非侵入式 & B2B 賦能</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    我們拒絕製造長者的「被監控感」。透過投影技術與信任傳遞，我們建立了一條通往長者內心的科技通道。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Strategy Card 1 -->
+                <div class="bg-stone-50 p-8 rounded-2xl border border-stone-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-6 text-red-600">
+                        <i class="fas fa-video-slash text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-3">非侵入式設計</h3>
+                    <p class="text-stone-600">
+                        不使用穿戴裝置或明顯的監視器。將牆面轉化為遊樂場，讓長輩在「玩遊戲」的過程中被安全守護，消除抗拒感。
+                    </p>
+                </div>
+
+                <!-- Strategy Card 2 -->
+                <div class="bg-stone-50 p-8 rounded-2xl border border-stone-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600">
+                        <i class="fas fa-handshake text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-3">B2B 信任通道</h3>
+                    <p class="text-stone-600">
+                        長輩信任的是人，不是機器。我們賦能照護員，讓他們覺得好用、省力，由他們引導長者使用，打破科技隔閡。
+                    </p>
+                </div>
+
+                <!-- Strategy Card 3 -->
+                <div class="bg-stone-50 p-8 rounded-2xl border border-stone-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
+                        <i class="fas fa-layer-group text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-3">三層防護架構</h3>
+                    <p class="text-stone-600">
+                        1. 照護員：極簡操作<br>
+                        2. 長者：高對比投影<br>
+                        3. 安全：AI 隱形監測
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: The Design Core (Prototype Demo) -->
+    <section id="prototype" class="py-16 bg-stone-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="mb-12 text-center">
+                <span class="bg-yellow-400 text-stone-900 px-3 py-1 rounded-full text-sm font-bold mb-4 inline-block">核心展示</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">建立高齡 UI/UX 設計標準</h2>
+                <p class="text-lg text-stone-300 max-w-3xl mx-auto">
+                    請親自體驗我們為桃園長照定義的「視覺」、「互動」與「安全」三大規範。
+                </p>
+            </div>
+
+            <!-- Interactive Dashboard Container -->
+            <div class="bg-stone-800 rounded-3xl border border-stone-700 shadow-2xl overflow-hidden">
+                
+                <!-- Tab Navigation -->
+                <div class="flex border-b border-stone-700">
+                    <button onclick="switchTab('visual')" id="tab-visual" class="flex-1 py-4 text-center font-medium bg-stone-700 text-white transition">視覺標準 (ISO)</button>
+                    <button onclick="switchTab('interaction')" id="tab-interaction" class="flex-1 py-4 text-center font-medium text-stone-400 hover:bg-stone-750 transition">互動標準 (寬容)</button>
+                    <button onclick="switchTab('safety')" id="tab-safety" class="flex-1 py-4 text-center font-medium text-stone-400 hover:bg-stone-750 transition">安全標準 (AI警示)</button>
+                </div>
+
+                <!-- Tab Content: Visual Standard -->
+                <div id="content-visual" class="p-8 md:p-12">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4 text-yellow-400">針對視力退化的光學調整</h3>
+                            <p class="text-stone-300 mb-6">
+                                投影介面受環境光影響大。我們捨棄一般 APP 的柔和美學，改用<b>深藍配青檸綠</b>的高對比方案，並將字體級距設定為 <b>72pt+</b>，確保長者在 2 公尺外也能清晰閱讀。
+                            </p>
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm text-stone-400">切換模式：</span>
+                                <button onclick="setVisualMode('bad')" class="px-4 py-2 rounded bg-white text-gray-400 text-sm border border-gray-300">一般手機 UI</button>
+                                <button onclick="setVisualMode('good')" class="px-4 py-2 rounded bg-[#003366] text-[#CCFF00] font-bold border border-[#CCFF00]">LILab 標準 UI</button>
+                            </div>
+                        </div>
+                        <!-- Visual Demo Area -->
+                        <div id="visual-demo-box" class="h-64 rounded-xl flex flex-col items-center justify-center text-center p-4 transition-all duration-500 bg-white border-4 border-stone-600">
+                            <h4 id="demo-title" class="mb-2">請跟我做動作</h4>
+                            <p id="demo-text" class="max-w-xs">雙手舉高，深呼吸</p>
+                            <div id="demo-sub" class="mt-4 text-xs">下一動作：轉圈圈</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Interaction Standard -->
+                <div id="content-interaction" class="p-8 md:p-12 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4 text-yellow-400">寬容互動介面 (Forgiving UI)</h3>
+                            <p class="text-stone-300 mb-6">
+                                長輩手眼協調慢，精細操作是大忌。我們的觸發熱區是<b>「身體級」</b>的巨大範圍。做錯了沒有錯誤音效，只有持續的鼓勵。
+                            </p>
+                            <div class="bg-stone-900/50 p-4 rounded-lg border border-stone-600">
+                                <p class="text-sm text-yellow-400 mb-2"><i class="fas fa-info-circle mr-2"></i>試試看：移動滑鼠/手指進入右側圓圈</p>
+                                <p class="text-xs text-stone-400">系統不要求「精準點擊」，只要進入範圍即判定成功。</p>
+                            </div>
+                        </div>
+                        <!-- Interaction Demo Area -->
+                        <div class="h-64 bg-[#003366] rounded-xl relative overflow-hidden flex items-center justify-center border-4 border-[#CCFF00]">
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                                <i class="fas fa-child text-9xl text-white"></i>
+                            </div>
+                            <!-- Hit Area -->
+                            <div id="hit-target" class="w-32 h-32 rounded-full border-4 border-[#CCFF00] bg-[#CCFF00]/10 flex items-center justify-center cursor-pointer hit-area group transition-all duration-300">
+                                <span class="text-[#CCFF00] font-bold text-lg group-hover:scale-110 transition-transform">揮手這裡</span>
+                            </div>
+                            <div id="feedback-msg" class="absolute bottom-4 text-[#CCFF00] text-2xl font-bold opacity-0 transition-opacity duration-300">
+                                很棒！加油！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Safety Standard -->
+                <div id="content-safety" class="p-8 md:p-12 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4 text-red-400">安全標準：5秒內視覺搶奪</h3>
+                            <p class="text-stone-300 mb-6">
+                                AI 隱形監測是核心。平時它是隱形的，一旦偵測到<b>「跌倒」</b>，系統會用醒目的<b>紅色警示框</b>與聲響，強行搶奪照護員的注意力。
+                            </p>
+                            <button onclick="triggerFallSim()" id="sim-btn" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-lg shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fas fa-exclamation-triangle"></i> 模擬長者跌倒事件
+                            </button>
+                            <p class="text-xs text-stone-500 mt-2 text-center">點擊按鈕測試 AI 警示反應</p>
+                        </div>
+                        <!-- Safety Demo Area -->
+                        <div id="safety-screen" class="h-64 bg-[#003366] rounded-xl relative overflow-hidden border-4 border-stone-600 transition-all duration-200">
+                            <!-- Normal State Content -->
+                            <div class="absolute top-4 left-4 text-[#CCFF00] font-bold text-xl z-10">
+                                <i class="fas fa-music mr-2"></i> 音樂律動中...
+                            </div>
+                            <div class="absolute top-4 right-4 text-green-400 font-bold z-10" id="safety-status">
+                                <i class="fas fa-shield-alt mr-1"></i> 安全監測中
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="fas fa-user-check text-6xl text-[#CCFF00]/50" id="safety-icon"></i>
+                            </div>
+                            
+                            <!-- Alert Overlay (Hidden by default) -->
+                            <div id="alert-overlay" class="absolute inset-0 bg-red-600/20 hidden flex-col items-center justify-center z-20">
+                                <div class="bg-red-600 text-white px-6 py-3 rounded-lg font-bold text-2xl mb-2 animate-bounce">
+                                    <i class="fas fa-exclamation-circle mr-2"></i> 偵測到跌倒！
+                                </div>
+                                <div class="text-white text-lg font-bold bg-black/50 px-4 py-1 rounded">
+                                    位置：右側休息區
+                                </div>
+                                <div id="countdown" class="text-white text-4xl font-black mt-4 drop-shadow-md">5.0s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: AI & Value -->
+    <section id="ai-value" class="py-16 bg-stone-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                
+                <!-- AI Personalization -->
+                <div>
+                    <h2 class="text-3xl font-bold text-stone-900 mb-6">不僅是投影，更是 AI 教練</h2>
+                    <p class="text-stone-600 mb-6">
+                        系統後端 App 會根據長者的歷史活動數據，自動進行<b>「適性分級」</b>。確保每位長者做的運動，都是適合他們體能等級的。
+                    </p>
+                    
+                    <!-- Mock App Interface -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-stone-200">
+                        <div class="bg-stone-800 px-4 py-3 flex justify-between items-center">
+                            <span class="text-white font-bold"><i class="fas fa-robot mr-2"></i>AI 建議課程</span>
+                            <span class="text-xs text-stone-400">Today, 10:00 AM</span>
+                        </div>
+                        <div class="p-4">
+                            <!-- Group A -->
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-bold text-stone-800"><i class="fas fa-running text-orange-500 mr-2"></i>活力組 (Group A)</h4>
+                                    <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">推薦競賽</span>
+                                </div>
+                                <div class="text-sm text-stone-500 ml-6">適合對象：陳伯伯、李阿姨 (反應快、行動自如)</div>
+                            </div>
+                            <hr class="border-stone-100 my-3">
+                            <!-- Group B -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-bold text-stone-800"><i class="fas fa-chair text-blue-500 mr-2"></i>伸展組 (Group B)</h4>
+                                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">推薦坐姿</span>
+                                </div>
+                                <div class="text-sm text-stone-500 ml-6">適合對象：王爺爺、張奶奶 (需坐輪椅、動作緩慢)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value Pyramid -->
+                <div>
+                    <h2 class="text-3xl font-bold text-stone-900 mb-6">機構價值金字塔</h2>
+                    <p class="text-stone-600 mb-6">
+                        我們不僅為長者創造快樂，更為養老機構創造實質的營運效益。
+                    </p>
+                    <div class="relative h-64 flex flex-col justify-end items-center gap-2">
+                        <!-- Tier 1 -->
+                        <div class="w-full bg-stone-200 p-4 rounded-lg text-center text-stone-600 font-bold text-sm transform hover:scale-105 transition cursor-default">
+                            <i class="fas fa-star mr-2"></i>服務加值 (特色課程)
+                        </div>
+                        <!-- Tier 2 -->
+                        <div class="w-[85%] bg-stone-300 p-4 rounded-lg text-center text-stone-700 font-bold text-lg transform hover:scale-105 transition cursor-default">
+                            <i class="fas fa-file-contract mr-2"></i>風險管理 (數位紀錄)
+                        </div>
+                        <!-- Tier 3 -->
+                        <div class="w-[100%] bg-stone-800 p-4 rounded-lg text-center text-white font-bold text-xl shadow-lg transform hover:scale-105 transition cursor-default">
+                            <i class="fas fa-chart-line mr-2"></i>營運優化 (降本增效)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conclusion -->
+    <footer class="bg-stone-900 text-stone-400 py-16 border-t border-stone-800">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <i class="fas fa-quote-left text-3xl text-stone-700 mb-6"></i>
+            <h2 class="text-2xl md:text-4xl font-bold text-white mb-8 leading-relaxed">
+                「讓科技承擔安全的重量，<br>讓雙手回歸擁抱的溫度。」
+            </h2>
+            <p class="text-stone-500">
+                Let technology bear the weight of safety, so human hands can return to the warmth of embracing.
+            </p>
+            <div class="mt-12 text-sm">
+                <p>&copy; 2025 Lupin Interaction Lab (LILab). All Rights Reserved.</p>
+                <p class="mt-2">Based on the research proposal for Taoyuan City Smart Long-term Care.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Chart Data & Config
+        document.addEventListener('DOMContentLoaded', function() {
+            // Market Chart (Pie)
+            const ctxMarket = document.getElementById('marketChart').getContext('2d');
+            new Chart(ctxMarket, {
+                type: 'doughnut',
+                data: {
+                    labels: ['健康長者 (Healthy)', '亞健康 (Sub-healthy)', '失智/失能 (Dementia)', '臥床 (Bedridden)'],
+                    datasets: [{
+                        data: [15, 45, 30, 10], // Estimated distribution for conceptual point
+                        backgroundColor: ['#e7e5e4', '#a8a29e', '#57534e', '#292524'], // Stone scale
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': 需求極度不同';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Manpower Chart (Bar)
+            const ctxManpower = document.getElementById('manpowerChart').getContext('2d');
+            new Chart(ctxManpower, {
+                type: 'bar',
+                data: {
+                    labels: ['日照覆蓋率 (Coverage)', '人力充足率 (Staffing)'],
+                    datasets: [{
+                        label: '現況百分比',
+                        data: [80.9, 25], // 80.9% coverage vs 1:4 ratio (approx 25% of ideal 1:1 attention)
+                        backgroundColor: ['#22c55e', '#ef4444'], // Green vs Red
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Initialize Visual Mode
+            setVisualMode('bad');
+            
+            // Interaction Demo Hover Logic
+            const hitTarget = document.getElementById('hit-target');
+            const feedbackMsg = document.getElementById('feedback-msg');
+            
+            hitTarget.addEventListener('mouseenter', () => {
+                feedbackMsg.style.opacity = '1';
+                hitTarget.classList.add('scale-110');
+                hitTarget.style.backgroundColor = 'rgba(204, 255, 0, 0.4)';
+            });
+            
+            hitTarget.addEventListener('mouseleave', () => {
+                feedbackMsg.style.opacity = '0';
+                hitTarget.classList.remove('scale-110');
+                hitTarget.style.backgroundColor = 'rgba(204, 255, 0, 0.1)';
+            });
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all contents
+            ['visual', 'interaction', 'safety'].forEach(id => {
+                document.getElementById(`content-${id}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${id}`);
+                btn.classList.remove('bg-stone-700', 'text-white');
+                btn.classList.add('text-stone-400');
+            });
+
+            // Show selected content
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('text-stone-400');
+            activeBtn.classList.add('bg-stone-700', 'text-white');
+        }
+
+        // Visual Standard Demo Logic
+        function setVisualMode(mode) {
+            const box = document.getElementById('visual-demo-box');
+            const title = document.getElementById('demo-title');
+            const text = document.getElementById('demo-text');
+            const sub = document.getElementById('demo-sub');
+
+            if (mode === 'bad') {
+                // Bad UI style
+                box.className = "h-64 rounded-xl flex flex-col items-center justify-center text-center p-4 transition-all duration-500 bg-white border-4 border-gray-200";
+                title.className = "mb-2 text-gray-500 text-sm";
+                text.className = "max-w-xs text-gray-400 text-base font-light";
+                sub.className = "mt-4 text-xs text-gray-300";
+                box.innerHTML = `
+                    <h4 class="mb-2 text-gray-500 text-sm">請跟我做動作</h4>
+                    <p class="max-w-xs text-gray-400 text-base font-light">雙手舉高，深呼吸</p>
+                    <div class="mt-4 text-xs text-gray-300">下一動作：轉圈圈</div>
+                `;
+            } else {
+                // LILab Standard UI
+                box.className = "h-64 rounded-xl flex flex-col items-center justify-center text-center p-4 transition-all duration-500 bg-[#003366] border-4 border-[#CCFF00]";
+                box.innerHTML = `
+                    <h4 class="mb-4 text-[#CCFF00] text-3xl font-bold">請跟我做動作</h4>
+                    <p class="max-w-xs text-white text-[2.5rem] leading-none font-bold">雙手舉高<br>深呼吸</p>
+                    <div class="mt-6 text-[#CCFF00] text-xl font-bold border border-[#CCFF00] px-4 py-1 rounded-full">下一動作：轉圈圈</div>
+                `;
+            }
+        }
+
+        // Safety Simulation Logic
+        let simTimer;
+        function triggerFallSim() {
+            const screen = document.getElementById('safety-screen');
+            const overlay = document.getElementById('alert-overlay');
+            const status = document.getElementById('safety-status');
+            const icon = document.getElementById('safety-icon');
+            const countdownEl = document.getElementById('countdown');
+            const btn = document.getElementById('sim-btn');
+
+            // Reset state
+            clearTimeout(simTimer);
+            
+            // Activate Alert State
+            screen.classList.add('border-red-600', 'alert-pulse');
+            screen.classList.remove('border-stone-600');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            status.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> 警報啟動';
+            status.classList.remove('text-green-400');
+            status.classList.add('text-red-500');
+            icon.className = "fas fa-user-injured text-6xl text-red-500 animate-bounce";
+            btn.disabled = true;
+            btn.innerText = "警報發送中...";
+
+            // Countdown Logic
+            let timeLeft = 5.0;
+            const interval = setInterval(() => {
+                timeLeft -= 0.1;
+                countdownEl.innerText = timeLeft.toFixed(1) + 's';
+                
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    // Reset to normal after "intervention"
+                    resetSafetySim();
+                }
+            }, 100);
+        }
+
+        function resetSafetySim() {
+            const screen = document.getElementById('safety-screen');
+            const overlay = document.getElementById('alert-overlay');
+            const status = document.getElementById('safety-status');
+            const icon = document.getElementById('safety-icon');
+            const btn = document.getElementById('sim-btn');
+
+            setTimeout(() => {
+                screen.classList.remove('border-red-600', 'alert-pulse');
+                screen.classList.add('border-stone-600');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                status.innerHTML = '<i class="fas fa-shield-alt mr-1"></i> 安全監測中';
+                status.classList.add('text-green-400');
+                status.classList.remove('text-red-500');
+                icon.className = "fas fa-user-check text-6xl text-[#CCFF00]/50";
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 模擬長者跌倒事件';
+            }, 1000); // Short delay to show 0.0s
+        }
+
+        // Smooth Scrolling
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
