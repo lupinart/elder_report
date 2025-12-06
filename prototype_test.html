@@ -93,10 +93,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
         }
         
-        /* 狀態卡片定位邏輯 (Stable Fix) 
-           關鍵修改：在所有模式下都強制 position: absolute，
-           確保它們重疊在同一位置，不會因為 DOM 順序而產生位移。
-        */
+        /* 狀態卡片定位邏輯 (Stable Fix) */
         .status-card {
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: absolute;
@@ -105,14 +102,12 @@
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
-            /* 預設在容器底部對齊 */
             left: 0;
         }
         
         /* Desktop Override */
         @media (min-width: 768px) {
             .status-card {
-                /* 保持 absolute，不要改 relative */
                 width: 100%;
                 right: 0;
                 bottom: 0; 
@@ -165,35 +160,43 @@
             </div>
         </div>
 
-        <!-- Game Area -->
-        <div class="flex-grow w-full relative flex items-start md:items-center justify-center overflow-hidden pt-4 md:pt-0">
+        <!-- Game Area: 移除 overflow-hidden，改用 flex-center 確保在畫面中間 -->
+        <div class="flex-grow w-full relative flex items-start md:items-center justify-center pt-4 md:pt-0">
             
             <!-- 蘋果樹容器 -->
-            <div class="relative w-[85vw] h-[50vh] max-h-[500px] md:w-[800px] md:h-[600px] md:max-h-none transition-all duration-500">
+            <!-- Desktop Fix: 
+                 1. md:w-[60vh] md:h-[75vh]: 改用視窗高度百分比 (vh) 保持比例，避免超出螢幕
+                 2. md:max-h-[600px]: 設定最大高度
+                 3. md:aspect-[4/3]: 保持樹的胖瘦比例
+            -->
+            <div class="relative w-[85vw] h-[50vh] max-h-[500px] md:w-auto md:h-[70vh] md:max-h-[650px] md:aspect-[4/3] transition-all duration-500">
                 
                 <!-- 樹冠 -->
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[90%] h-[85%] bg-[#2E7D32] rounded-[40%] opacity-90 shadow-2xl"></div>
                 <!-- 樹幹 -->
                 <div class="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[15%] h-[25%] bg-[#5D4037] rounded-lg"></div>
 
-                <!-- 蘋果 1 -->
-                <div class="absolute top-[20%] left-[10%] md:top-20 md:left-32 z-30 interactive-apple group" onclick="triggerSuccess(this)">
+                <!-- 蘋果 1 (Left) -->
+                <!-- Desktop Fix: 改用百分比定位 (top-[15%], left-[20%]) 替代固定 px，隨樹縮放 -->
+                <div class="absolute top-[20%] left-[10%] md:top-[15%] md:left-[15%] z-30 interactive-apple group" onclick="triggerSuccess(this)">
                     <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="relative w-16 h-16 md:w-36 md:h-36 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform">
-                        <i class="fas fa-apple-alt text-white text-3xl md:text-7xl opacity-90"></i>
+                    <div class="relative w-16 h-16 md:w-32 md:h-32 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform">
+                        <i class="fas fa-apple-alt text-white text-3xl md:text-6xl opacity-90"></i>
                     </div>
                 </div>
 
-                <!-- 蘋果 2 -->
-                <div class="absolute top-[15%] right-[10%] md:top-10 md:right-40 z-30 interactive-apple group" onclick="triggerSuccess(this)">
+                <!-- 蘋果 2 (Right) -->
+                <!-- Desktop Fix: 改用百分比定位 (top-[10%], right-[15%]) -->
+                <div class="absolute top-[15%] right-[10%] md:top-[10%] md:right-[15%] z-30 interactive-apple group" onclick="triggerSuccess(this)">
                     <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="relative w-16 h-16 md:w-36 md:h-36 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform" style="animation-delay: 1.5s;">
-                        <i class="fas fa-apple-alt text-white text-3xl md:text-7xl opacity-90"></i>
+                    <div class="relative w-16 h-16 md:w-32 md:h-32 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform" style="animation-delay: 1.5s;">
+                        <i class="fas fa-apple-alt text-white text-3xl md:text-6xl opacity-90"></i>
                     </div>
                 </div>
 
                 <!-- 容錯提示 -->
-                <div class="absolute -bottom-8 md:bottom-0 w-full text-center z-10">
+                <!-- Desktop Fix: 調整 bottom 值，確保文字在樹幹下方且不被切掉 -->
+                <div class="absolute -bottom-8 md:bottom-2 w-full text-center z-10">
                     <p class="text-white/60 text-xs md:text-2xl font-mono flex items-center justify-center gap-2 bg-black/30 md:bg-transparent rounded-full px-3 py-1 inline-block backdrop-blur-sm">
                         <span class="border border-dashed border-[#CCFF00] rounded-full w-4 h-4 md:w-8 md:h-8 flex items-center justify-center text-[8px] md:text-sm text-[#CCFF00]">+</span>
                         容錯範圍 ±30cm
@@ -207,7 +210,6 @@
     </div>
 
     <!-- 3. Caregiver Status UI -->
-    <!-- 這裡的容器尺寸給定高度，讓 absolute 的卡片有地方對齊 -->
     <div id="ui-caregiver" class="absolute bottom-[90px] left-0 w-full px-4 h-[120px] md:h-[160px] md:bottom-8 md:right-8 md:w-[450px] md:px-0 md:left-auto z-40 flex flex-col items-center md:items-end justify-end pointer-events-none">
         
         <!-- Normal -->
