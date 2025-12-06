@@ -2,18 +2,22 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lupin Lab - 高對比投影互動原型 v2 (RWD)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Lupin Lab - 高對比投影互動原型 v5 (Stable Position)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         
+        /* 基礎設定 */
         body {
             font-family: 'Noto Sans TC', sans-serif;
             overflow: hidden;
             background-color: #000;
             cursor: default;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         @media (min-width: 768px) {
             body { cursor: none; }
@@ -21,12 +25,12 @@
 
         :root {
             --color-bg-dark: #001f3f;
-            --color-primary: #CCFF00; /* Green/Lime */
-            --color-warning: #FFDC00; /* Yellow */
-            --color-alert: #FF4136;   /* Red */
+            --color-primary: #CCFF00;
+            --color-warning: #FFDC00;
+            --color-alert: #FF4136;
         }
 
-        /* 動畫系統 */
+        /* --- 動畫區 --- */
         @keyframes breathe {
             0%, 100% { opacity: 0.8; transform: scale(1); }
             50% { opacity: 1; transform: scale(1.05); }
@@ -34,10 +38,10 @@
         
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
-        .animate-float { animation: float 6s infinite ease-in-out; }
+        .animate-float { animation: float 5s infinite ease-in-out; }
 
         @keyframes pulse-red-screen {
             0%, 100% { box-shadow: inset 0 0 20px 10px rgba(255, 65, 54, 0.1); }
@@ -52,14 +56,14 @@
         .animate-pulse-red { animation: pulse-red-screen 2s infinite; }
 
         @keyframes pulse-yellow {
-            0%, 100% { border-color: rgba(255, 220, 0, 0.6); box-shadow: 0 0 20px rgba(255, 220, 0, 0.2); transform: scale(1); }
-            50% { border-color: rgba(255, 220, 0, 1); box-shadow: 0 0 40px rgba(255, 220, 0, 0.4); transform: scale(1.02); }
+            0%, 100% { border-color: rgba(255, 220, 0, 0.6); box-shadow: 0 0 10px rgba(255, 220, 0, 0.2); }
+            50% { border-color: rgba(255, 220, 0, 1); box-shadow: 0 0 20px rgba(255, 220, 0, 0.4); }
         }
         .animate-pulse-yellow { animation: pulse-yellow 3s infinite; }
 
         @keyframes ripple {
             0% { transform: scale(0.8); opacity: 1; border-width: 4px; }
-            100% { transform: scale(2.5); opacity: 0; border-width: 0px; }
+            100% { transform: scale(2.0); opacity: 0; border-width: 0px; }
         }
         .ripple-effect {
             position: absolute;
@@ -67,7 +71,7 @@
             border-radius: 50%;
             width: 100%;
             height: 100%;
-            animation: ripple 0.6s ease-out forwards;
+            animation: ripple 0.5s ease-out forwards;
             pointer-events: none;
         }
 
@@ -77,62 +81,68 @@
         }
 
         .glass-panel {
-            background: rgba(0, 31, 63, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            background: rgba(0, 31, 63, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .critical-panel {
             background: #4a1212;
-            border-left: 8px solid #FF4136;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            border-left: 6px solid #FF4136;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
         }
         
+        /* 狀態卡片定位邏輯 (Stable Fix) 
+           關鍵修改：在所有模式下都強制 position: absolute，
+           確保它們重疊在同一位置，不會因為 DOM 順序而產生位移。
+        */
         .status-card {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: absolute;
             bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            width: 90%;
+            width: 100%;
             opacity: 0;
+            transform: translateY(20px);
             pointer-events: none;
+            /* 預設在容器底部對齊 */
+            left: 0;
         }
         
+        /* Desktop Override */
         @media (min-width: 768px) {
             .status-card {
-                left: auto;
-                right: 0;
-                transform: translateY(20px);
+                /* 保持 absolute，不要改 relative */
                 width: 100%;
+                right: 0;
+                bottom: 0; 
+                transform: translateY(20px);
             }
         }
 
         .status-card.active {
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
-            pointer-events: auto;
+            transform: translateY(0);
         }
 
-        @media (min-width: 768px) {
-            .status-card.active {
-                transform: translateY(0);
-            }
+        /* 互動元素設定 */
+        .interactive-apple {
+            cursor: pointer;
+            pointer-events: auto !important;
+            touch-action: manipulation;
         }
     </style>
 </head>
 <body id="app-body" class="w-screen h-screen relative bg-black">
 
-    <!-- 1. Ambient Mode (閒置待機) -->
-    <div id="mode-ambient" class="absolute inset-0 w-full h-full transition-opacity duration-1000 z-10">
+    <!-- 1. Ambient Mode (待機模式) -->
+    <div id="mode-ambient" class="absolute inset-0 w-full h-full transition-opacity duration-1000 z-10 pointer-events-none">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-[60s] ease-linear scale-110" 
              style="background-image: url('https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=2574&auto=format&fit=crop');">
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/80"></div>
         
-        <div class="absolute top-12 left-8 md:top-16 md:left-16 text-white font-light tracking-wide">
+        <div class="absolute top-12 left-6 md:top-16 md:left-16 text-white font-light tracking-wide">
             <h1 class="text-6xl md:text-9xl font-bold tracking-tighter text-[#CCFF00]" id="clock">10:30</h1>
             <div class="mt-2 pl-2 border-l-4 border-white/30">
                 <p class="text-xl md:text-4xl font-medium">12月6日 星期六</p>
@@ -142,120 +152,129 @@
     </div>
 
     <!-- 2. Activity Mode (活動模式) -->
-    <div id="mode-activity" class="absolute inset-0 w-full h-full bg-[#001f3f] transition-opacity duration-500 opacity-0 z-20 flex flex-col items-center justify-center pointer-events-none overflow-hidden">
+    <div id="mode-activity" class="absolute inset-0 w-full h-full bg-[#001f3f] transition-opacity duration-500 opacity-0 z-20 flex flex-col pointer-events-none">
+        
         <!-- Header -->
-        <div class="absolute top-0 w-full h-24 md:h-32 bg-gradient-to-b from-black/90 to-transparent flex items-center justify-between px-6 md:px-16 pointer-events-auto z-30">
+        <div class="w-full h-20 md:h-32 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 md:px-16 flex-shrink-0 z-30">
             <div class="flex items-center gap-3 md:gap-6">
-                <span class="bg-[#CCFF00] text-[#001f3f] px-2 py-1 md:px-4 md:py-1 rounded text-sm md:text-xl font-bold whitespace-nowrap">訓練中</span>
-                <h2 class="text-xl md:text-5xl text-white font-bold tracking-wide truncate">摘果子</h2>
+                <span class="bg-[#CCFF00] text-[#001f3f] px-2 py-0.5 md:px-4 md:py-1 rounded text-xs md:text-xl font-bold whitespace-nowrap">訓練中</span>
+                <h2 class="text-lg md:text-5xl text-white font-bold tracking-wide truncate">摘果子</h2>
             </div>
-            <div class="text-[#CCFF00] text-lg md:text-3xl font-bold animate-pulse whitespace-nowrap">
-                <i class="fas fa-arrows-up-down mr-1 md:mr-3"></i><span class="hidden md:inline">跟隨光點移動</span><span class="md:hidden">動一動</span>
+            <div class="text-[#CCFF00] text-sm md:text-3xl font-bold animate-pulse whitespace-nowrap">
+                <i class="fas fa-arrow-up mr-1 md:mr-3"></i><span class="hidden md:inline">請將手舉高</span><span class="md:hidden">舉高雙手</span>
             </div>
         </div>
 
-        <!-- 樹的容器：增加 pb-32 以確保不被底部 Console 遮擋 -->
-        <div class="relative w-full h-full flex flex-col items-center justify-center pt-10 md:pt-16 pb-32 md:pb-0 pointer-events-auto">
-            <!-- 蘋果樹示意 (RWD Container: 改用 vw 與 aspect-ratio 確保形狀穩定) -->
-            <div class="relative w-[85vw] max-w-[400px] aspect-[4/5] md:w-[800px] md:h-[600px] md:aspect-auto md:max-w-none transition-all duration-500">
+        <!-- Game Area -->
+        <div class="flex-grow w-full relative flex items-start md:items-center justify-center overflow-hidden pt-4 md:pt-0">
+            
+            <!-- 蘋果樹容器 -->
+            <div class="relative w-[85vw] h-[50vh] max-h-[500px] md:w-[800px] md:h-[600px] md:max-h-none transition-all duration-500">
                 
-                <!-- 樹冠與樹幹 -->
-                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[90%] h-[80%] bg-[#2E7D32] rounded-[40%] opacity-90 shadow-2xl"></div>
-                <div class="absolute bottom-[20%] md:bottom-0 left-1/2 transform -translate-x-1/2 w-[15%] h-[30%] bg-[#5D4037] rounded-lg"></div>
+                <!-- 樹冠 -->
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[90%] h-[85%] bg-[#2E7D32] rounded-[40%] opacity-90 shadow-2xl"></div>
+                <!-- 樹幹 -->
+                <div class="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[15%] h-[25%] bg-[#5D4037] rounded-lg"></div>
 
-                <!-- 互動目標 1 (Apple 1: 位置改為更安全的相對座標) -->
-                <div class="absolute top-[25%] left-[15%] md:top-20 md:left-32 group cursor-pointer" onclick="triggerSuccess(this)">
-                    <!-- 熱區視覺化與提示文字 -->
-                    <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <!-- 蘋果本體 -->
+                <!-- 蘋果 1 -->
+                <div class="absolute top-[20%] left-[10%] md:top-20 md:left-32 z-30 interactive-apple group" onclick="triggerSuccess(this)">
+                    <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     <div class="relative w-16 h-16 md:w-36 md:h-36 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform">
                         <i class="fas fa-apple-alt text-white text-3xl md:text-7xl opacity-90"></i>
                     </div>
                 </div>
 
-                <!-- 互動目標 2 (Apple 2) -->
-                <div class="absolute top-[15%] right-[15%] md:top-10 md:right-40 group cursor-pointer" onclick="triggerSuccess(this)">
-                    <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <!-- 蘋果 2 -->
+                <div class="absolute top-[15%] right-[10%] md:top-10 md:right-40 z-30 interactive-apple group" onclick="triggerSuccess(this)">
+                    <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     <div class="relative w-16 h-16 md:w-36 md:h-36 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform" style="animation-delay: 1.5s;">
                         <i class="fas fa-apple-alt text-white text-3xl md:text-7xl opacity-90"></i>
                     </div>
                 </div>
 
-                <!-- 容錯判定提示 -->
-                <div class="absolute -bottom-8 md:bottom-0 w-full text-center">
-                    <p class="text-white/60 text-sm md:text-2xl font-mono flex items-center justify-center gap-2">
-                        <span class="border border-dashed border-[#CCFF00] rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-[10px] md:text-sm text-[#CCFF00]">+</span>
-                        動作彈性範圍設計 (±30cm)
+                <!-- 容錯提示 -->
+                <div class="absolute -bottom-8 md:bottom-0 w-full text-center z-10">
+                    <p class="text-white/60 text-xs md:text-2xl font-mono flex items-center justify-center gap-2 bg-black/30 md:bg-transparent rounded-full px-3 py-1 inline-block backdrop-blur-sm">
+                        <span class="border border-dashed border-[#CCFF00] rounded-full w-4 h-4 md:w-8 md:h-8 flex items-center justify-center text-[8px] md:text-sm text-[#CCFF00]">+</span>
+                        容錯範圍 ±30cm
                     </p>
                 </div>
             </div>
         </div>
+
+        <!-- Desktop Spacer -->
+        <div class="h-32 md:hidden flex-shrink-0 w-full"></div>
     </div>
 
     <!-- 3. Caregiver Status UI -->
-    <!-- Mobile: 抬高底部距離 (bottom-32) 避開 Console -->
-    <div id="ui-caregiver" class="absolute bottom-36 md:bottom-8 left-0 md:left-auto md:right-8 z-40 w-full md:w-[500px] h-[160px] flex items-end justify-center md:justify-end pointer-events-none">
+    <!-- 這裡的容器尺寸給定高度，讓 absolute 的卡片有地方對齊 -->
+    <div id="ui-caregiver" class="absolute bottom-[90px] left-0 w-full px-4 h-[120px] md:h-[160px] md:bottom-8 md:right-8 md:w-[450px] md:px-0 md:left-auto z-40 flex flex-col items-center md:items-end justify-end pointer-events-none">
+        
         <!-- Normal -->
-        <div id="status-normal" class="status-card active glass-panel px-4 py-3 md:px-6 md:py-5 rounded-2xl flex items-center gap-3 md:gap-5 border-l-4 border-[#CCFF00] h-auto md:h-[100px]">
+        <div id="status-normal" class="status-card active glass-panel px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl flex items-center gap-3 md:gap-5 border-l-4 border-[#CCFF00]">
             <div class="relative flex-shrink-0">
                 <div class="w-3 h-3 md:w-4 md:h-4 bg-[#CCFF00] rounded-full"></div>
                 <div class="absolute inset-0 w-3 h-3 md:w-4 md:h-4 bg-[#CCFF00] rounded-full animate-ping opacity-75"></div>
             </div>
-            <div>
-                <p class="text-[#CCFF00] text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1">MONITORING</p>
-                <p class="text-white text-lg md:text-2xl font-medium tracking-wide">環境監測中</p>
+            <div class="flex-1">
+                <p class="text-[#CCFF00] text-[10px] md:text-xs font-bold tracking-widest uppercase mb-0.5">MONITORING</p>
+                <p class="text-white text-base md:text-2xl font-medium tracking-wide">環境監測中</p>
             </div>
         </div>
+
         <!-- Warning -->
-        <div id="status-warning" class="status-card glass-panel px-4 py-3 md:px-6 md:py-5 rounded-2xl flex items-center gap-4 md:gap-5 border-l-4 border-[#FFDC00] animate-pulse-yellow h-auto md:h-[100px]">
-            <div class="text-[#FFDC00] text-2xl md:text-3xl flex-shrink-0">
+        <div id="status-warning" class="status-card glass-panel px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-5 border-l-4 border-[#FFDC00] animate-pulse-yellow">
+            <div class="text-[#FFDC00] text-xl md:text-3xl flex-shrink-0">
                 <i class="fas fa-coffee"></i>
             </div>
-            <div>
-                <p class="text-[#FFDC00] text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1">GENTLE REMINDER</p>
-                <p class="text-white text-lg md:text-2xl font-bold">溫馨提醒：坐太久囉</p>
-                <p class="text-white/70 text-xs md:text-base">建議起身活動一下筋骨</p>
+            <div class="flex-1">
+                <p class="text-[#FFDC00] text-[10px] md:text-xs font-bold tracking-widest uppercase mb-0.5">REMINDER</p>
+                <p class="text-white text-base md:text-2xl font-bold">溫馨提醒：坐太久囉</p>
             </div>
         </div>
+
         <!-- Critical -->
-        <div id="status-critical" class="status-card critical-panel px-5 py-4 md:px-8 md:py-6 rounded-lg flex items-center gap-4 md:gap-6 h-auto md:h-[140px]">
-            <div class="text-[#FF4136] text-4xl md:text-6xl flex-shrink-0 opacity-90">
+        <div id="status-critical" class="status-card critical-panel px-5 py-4 md:px-8 md:py-6 rounded-lg flex items-center gap-4 md:gap-6">
+            <div class="text-[#FF4136] text-3xl md:text-6xl flex-shrink-0 opacity-90">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="flex flex-col justify-center">
-                <p class="text-[#ff8a84] text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-1">ATTENTION REQUIRED</p>
-                <h3 class="text-white text-2xl md:text-4xl font-black tracking-wide leading-tight mb-1">偵測到異常靜止</h3>
-                <p class="text-white/80 text-sm md:text-xl font-medium">請確認右側區域長者狀況</p>
+            <div class="flex flex-col justify-center flex-1">
+                <p class="text-[#ff8a84] text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-0.5">ATTENTION</p>
+                <h3 class="text-white text-xl md:text-4xl font-black tracking-wide leading-tight mb-1">偵測到異常靜止</h3>
+                <p class="text-white/80 text-xs md:text-xl font-medium">請確認右側區域長者狀況</p>
             </div>
         </div>
     </div>
 
     <!-- 全域警示紅框 -->
-    <div id="global-alert-overlay" class="absolute inset-0 border-[0px] border-[#FF4136] opacity-0 pointer-events-none transition-opacity duration-300 z-40 box-border"></div>
+    <div id="global-alert-overlay" class="absolute inset-0 border-[0px] border-[#FF4136] opacity-0 pointer-events-none transition-opacity duration-300 z-30 box-border"></div>
 
-    <!-- 4. Demo Controls (RWD Console Fix) -->
-    <!-- Mobile: Grid 2x2 layout at bottom -->
-    <div class="absolute bottom-0 left-0 w-full md:w-auto md:bottom-6 md:left-6 z-50">
-        <div class="glass-panel px-4 py-3 md:px-6 md:py-5 md:rounded-xl text-white/50 text-xs font-mono leading-relaxed border-t md:border-t-0 md:border-l-2 border-white/20 bg-black/80 md:bg-transparent backdrop-blur-md">
-            <!-- Mobile: Grid 2x2, Desktop: Vertical Stack -->
-            <div class="grid grid-cols-2 gap-2 md:flex md:flex-col md:gap-2 md:min-w-[160px]">
-                <div class="hidden md:block text-[10px] uppercase tracking-widest text-white/30 mb-2 border-b border-white/10 pb-1">Developer Console</div>
+    <!-- 4. Demo Controls (Console) -->
+    <div class="fixed bottom-0 left-0 w-full z-50 md:absolute md:bottom-8 md:left-8 md:w-auto pointer-events-auto">
+        <div class="glass-panel w-full md:w-auto px-2 py-2 md:px-6 md:py-5 md:rounded-xl bg-[#001f3f]/95 md:bg-black/80 backdrop-blur-xl border-t md:border-t-0 md:border-l-2 border-white/20">
+            
+            <div class="hidden md:block text-[10px] uppercase tracking-widest text-white/30 mb-2 border-b border-white/10 pb-1">Developer Console</div>
+            
+            <div class="grid grid-cols-4 gap-2 md:flex md:flex-col md:gap-3 md:min-w-[160px]">
                 
-                <button onclick="setMode('1')" class="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors group bg-white/5 md:bg-transparent rounded p-2 md:p-0">
-                    <span class="text-[#CCFF00] font-bold bg-white/10 px-2 py-0.5 rounded md:bg-transparent md:px-0">1</span> 
-                    <span class="md:group-hover:translate-x-1 transition-transform">Ambient</span>
+                <button onclick="setMode('1')" class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 md:p-0 rounded active:bg-white/10 transition-colors group">
+                    <span class="text-[#001f3f] bg-[#CCFF00] font-bold px-2 py-0.5 rounded text-xs md:bg-white/10 md:text-[#CCFF00] w-6 text-center">1</span> 
+                    <span class="text-white/70 text-[10px] md:text-xs md:group-hover:translate-x-1 transition-transform">Ambient</span>
                 </button>
-                <button onclick="setMode('2')" class="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors group bg-white/5 md:bg-transparent rounded p-2 md:p-0">
-                    <span class="text-[#CCFF00] font-bold bg-white/10 px-2 py-0.5 rounded md:bg-transparent md:px-0">2</span> 
-                    <span class="md:group-hover:translate-x-1 transition-transform">Activity</span>
+
+                <button onclick="setMode('2')" class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 md:p-0 rounded active:bg-white/10 transition-colors group">
+                    <span class="text-[#001f3f] bg-[#CCFF00] font-bold px-2 py-0.5 rounded text-xs md:bg-white/10 md:text-[#CCFF00] w-6 text-center">2</span> 
+                    <span class="text-white/70 text-[10px] md:text-xs md:group-hover:translate-x-1 transition-transform">Activity</span>
                 </button>
-                <button onclick="setMode('3')" class="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors group bg-white/5 md:bg-transparent rounded p-2 md:p-0">
-                    <span class="text-[#FFDC00] font-bold bg-white/10 px-2 py-0.5 rounded md:bg-transparent md:px-0">3</span> 
-                    <span class="md:group-hover:translate-x-1 transition-transform">Remind</span>
+
+                <button onclick="setMode('3')" class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 md:p-0 rounded active:bg-white/10 transition-colors group">
+                    <span class="text-[#001f3f] bg-[#FFDC00] font-bold px-2 py-0.5 rounded text-xs md:bg-white/10 md:text-[#FFDC00] w-6 text-center">3</span> 
+                    <span class="text-white/70 text-[10px] md:text-xs md:group-hover:translate-x-1 transition-transform">Remind</span>
                 </button>
-                <button onclick="setMode('4')" class="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors group bg-white/5 md:bg-transparent rounded p-2 md:p-0">
-                    <span class="text-[#FF4136] font-bold bg-white/10 px-2 py-0.5 rounded md:bg-transparent md:px-0">4</span> 
-                    <span class="md:group-hover:translate-x-1 transition-transform">Alert</span>
+
+                <button onclick="setMode('4')" class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 md:p-0 rounded active:bg-white/10 transition-colors group">
+                    <span class="text-white bg-[#FF4136] font-bold px-2 py-0.5 rounded text-xs md:bg-white/10 md:text-[#FF4136] w-6 text-center">4</span> 
+                    <span class="text-white/70 text-[10px] md:text-xs md:group-hover:translate-x-1 transition-transform">Alert</span>
                 </button>
             </div>
         </div>
@@ -271,14 +290,19 @@
         updateTime();
 
         window.triggerSuccess = function(element) {
+            if (element.classList.contains('active-click')) return;
+            element.classList.add('active-click');
+
             const ripple = document.createElement('div');
             ripple.classList.add('ripple-effect');
             element.appendChild(ripple);
             element.style.transform = "scale(1.2)";
+            
             setTimeout(() => {
                 element.style.transform = "";
                 ripple.remove();
-            }, 600);
+                element.classList.remove('active-click');
+            }, 500);
         }
 
         const uiState = {
@@ -297,7 +321,7 @@
             } else {
                 ambientEl.style.opacity = '0';
                 activityEl.style.opacity = '1';
-                activityEl.style.pointerEvents = 'auto';
+                activityEl.style.pointerEvents = 'none'; 
             }
 
             const sNormal = document.getElementById('status-normal');
@@ -321,6 +345,7 @@
         }
 
         window.setMode = function(key) {
+            if (navigator.vibrate) navigator.vibrate(10);
             switch(key) {
                 case '1': uiState.mode = 'ambient'; uiState.status = 'normal'; break;
                 case '2': uiState.mode = 'activity'; uiState.status = 'normal'; break;
