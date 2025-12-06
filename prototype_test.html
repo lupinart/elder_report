@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Lupin Lab - 高對比投影互動原型 v5 (Stable Position)</title>
+    <title>Lupin Lab - 高對比投影互動原型 v6 (iOS Safe Area Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -18,6 +18,8 @@
             touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
+            height: 100vh;
+            height: 100dvh; 
         }
         @media (min-width: 768px) {
             body { cursor: none; }
@@ -31,11 +33,6 @@
         }
 
         /* --- 動畫區 --- */
-        @keyframes breathe {
-            0%, 100% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-        
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -93,7 +90,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
         }
         
-        /* 狀態卡片定位邏輯 (Stable Fix) */
+        /* 狀態卡片定位邏輯 */
         .status-card {
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: absolute;
@@ -128,7 +125,7 @@
         }
     </style>
 </head>
-<body id="app-body" class="w-screen h-screen relative bg-black">
+<body id="app-body" class="w-full relative bg-black flex flex-col">
 
     <!-- 1. Ambient Mode (待機模式) -->
     <div id="mode-ambient" class="absolute inset-0 w-full h-full transition-opacity duration-1000 z-10 pointer-events-none">
@@ -146,11 +143,11 @@
         </div>
     </div>
 
-    <!-- 2. Activity Mode (活動模式) -->
-    <div id="mode-activity" class="absolute inset-0 w-full h-full bg-[#001f3f] transition-opacity duration-500 opacity-0 z-20 flex flex-col pointer-events-none">
+    <!-- 2. Activity Mode (活動模式 - 內容層) -->
+    <div id="mode-activity" class="w-full h-full md:absolute md:inset-0 bg-[#001f3f] transition-opacity duration-500 opacity-0 z-20 flex flex-col pointer-events-none overflow-hidden">
         
         <!-- Header -->
-        <div class="w-full h-20 md:h-32 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 md:px-16 flex-shrink-0 z-30">
+        <div class="w-full h-16 md:h-32 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 md:px-16 flex-shrink-0 z-30">
             <div class="flex items-center gap-3 md:gap-6">
                 <span class="bg-[#CCFF00] text-[#001f3f] px-2 py-0.5 md:px-4 md:py-1 rounded text-xs md:text-xl font-bold whitespace-nowrap">訓練中</span>
                 <h2 class="text-lg md:text-5xl text-white font-bold tracking-wide truncate">摘果子</h2>
@@ -160,24 +157,16 @@
             </div>
         </div>
 
-        <!-- Game Area: 移除 overflow-hidden，改用 flex-center 確保在畫面中間 -->
-        <div class="flex-grow w-full relative flex items-start md:items-center justify-center pt-4 md:pt-0">
+        <!-- Game Area -->
+        <div class="flex-grow w-full relative flex items-center justify-center">
             
             <!-- 蘋果樹容器 -->
-            <!-- Desktop Fix: 
-                 1. md:w-[60vh] md:h-[75vh]: 改用視窗高度百分比 (vh) 保持比例，避免超出螢幕
-                 2. md:max-h-[600px]: 設定最大高度
-                 3. md:aspect-[4/3]: 保持樹的胖瘦比例
-            -->
-            <div class="relative w-[85vw] h-[50vh] max-h-[500px] md:w-auto md:h-[70vh] md:max-h-[650px] md:aspect-[4/3] transition-all duration-500">
+            <div class="relative w-[85vw] h-[45vh] max-h-[400px] md:w-auto md:h-[70vh] md:max-h-[650px] md:aspect-[4/3] transition-all duration-500">
                 
-                <!-- 樹冠 -->
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[90%] h-[85%] bg-[#2E7D32] rounded-[40%] opacity-90 shadow-2xl"></div>
-                <!-- 樹幹 -->
                 <div class="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[15%] h-[25%] bg-[#5D4037] rounded-lg"></div>
 
-                <!-- 蘋果 1 (Left) -->
-                <!-- Desktop Fix: 改用百分比定位 (top-[15%], left-[20%]) 替代固定 px，隨樹縮放 -->
+                <!-- 蘋果 1 -->
                 <div class="absolute top-[20%] left-[10%] md:top-[15%] md:left-[15%] z-30 interactive-apple group" onclick="triggerSuccess(this)">
                     <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     <div class="relative w-16 h-16 md:w-32 md:h-32 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform">
@@ -185,8 +174,7 @@
                     </div>
                 </div>
 
-                <!-- 蘋果 2 (Right) -->
-                <!-- Desktop Fix: 改用百分比定位 (top-[10%], right-[15%]) -->
+                <!-- 蘋果 2 -->
                 <div class="absolute top-[15%] right-[10%] md:top-[10%] md:right-[15%] z-30 interactive-apple group" onclick="triggerSuccess(this)">
                     <div class="hotzone-visual absolute -inset-6 md:-inset-20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     <div class="relative w-16 h-16 md:w-32 md:h-32 bg-[#FF4136] rounded-full shadow-lg border-b-4 md:border-b-8 border-[#D50000] flex items-center justify-center animate-float active:scale-90 transition-transform" style="animation-delay: 1.5s;">
@@ -194,8 +182,6 @@
                     </div>
                 </div>
 
-                <!-- 容錯提示 -->
-                <!-- Desktop Fix: 調整 bottom 值，確保文字在樹幹下方且不被切掉 -->
                 <div class="absolute -bottom-8 md:bottom-2 w-full text-center z-10">
                     <p class="text-white/60 text-xs md:text-2xl font-mono flex items-center justify-center gap-2 bg-black/30 md:bg-transparent rounded-full px-3 py-1 inline-block backdrop-blur-sm">
                         <span class="border border-dashed border-[#CCFF00] rounded-full w-4 h-4 md:w-8 md:h-8 flex items-center justify-center text-[8px] md:text-sm text-[#CCFF00]">+</span>
@@ -204,13 +190,11 @@
                 </div>
             </div>
         </div>
-
-        <!-- Desktop Spacer -->
-        <div class="h-32 md:hidden flex-shrink-0 w-full"></div>
     </div>
 
-    <!-- 3. Caregiver Status UI -->
-    <div id="ui-caregiver" class="absolute bottom-[90px] left-0 w-full px-4 h-[120px] md:h-[160px] md:bottom-8 md:right-8 md:w-[450px] md:px-0 md:left-auto z-40 flex flex-col items-center md:items-end justify-end pointer-events-none">
+    <!-- 3. Caregiver Status UI (全域常駐) -->
+    <!-- 移至最外層，Absolute 定位，確保在任何模式下都顯示 -->
+    <div id="ui-caregiver" class="absolute bottom-[90px] left-0 w-full px-4 h-[100px] md:h-[160px] md:bottom-8 md:right-8 md:w-[450px] md:px-0 md:left-auto z-40 pointer-events-none">
         
         <!-- Normal -->
         <div id="status-normal" class="status-card active glass-panel px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl flex items-center gap-3 md:gap-5 border-l-4 border-[#CCFF00]">
@@ -252,7 +236,7 @@
     <div id="global-alert-overlay" class="absolute inset-0 border-[0px] border-[#FF4136] opacity-0 pointer-events-none transition-opacity duration-300 z-30 box-border"></div>
 
     <!-- 4. Demo Controls (Console) -->
-    <div class="fixed bottom-0 left-0 w-full z-50 md:absolute md:bottom-8 md:left-8 md:w-auto pointer-events-auto">
+    <div class="fixed bottom-0 left-0 w-full z-50 pb-[env(safe-area-inset-bottom)] bg-black/80 md:bg-transparent md:pb-0 md:absolute md:bottom-8 md:left-8 md:w-auto pointer-events-auto">
         <div class="glass-panel w-full md:w-auto px-2 py-2 md:px-6 md:py-5 md:rounded-xl bg-[#001f3f]/95 md:bg-black/80 backdrop-blur-xl border-t md:border-t-0 md:border-l-2 border-white/20">
             
             <div class="hidden md:block text-[10px] uppercase tracking-widest text-white/30 mb-2 border-b border-white/10 pb-1">Developer Console</div>
